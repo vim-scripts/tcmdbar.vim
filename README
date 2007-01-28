@@ -1,0 +1,35 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=1779
+
+This script is only for users of Total Commander and Win32 (maybe Win16).
+
+After proper installation:
+Start Total Commander, select one or more files, then click the GVim button.
+GVim will create an argument list from the selected files so you can edit them.
+Sounds trivial, but it is not.
+
+Works with Ctrl-B (show flattened file list).
+
+
+Customization for _vimrc (optional)
+
+Open files in windows, tab pages or in diff mode:
+    :let Tcmdbar_OpenIn = "Windows"
+    :let Tcmdbar_OpenIn = "Tabs"        " ignored in Vim6
+    :let Tcmdbar_OpenIn = "Diff Mode"
+
+Values may be abbreviated to "win", "tab" and "diff".
+
+
+You will get an error if you want to open too many files.  In this case
+Vim will only open windows/tabs for as many files as possible.
+
+-- Please report errors if the script does not work for you! --
+
+2007 Sep 17
+If the first argument is always the file list, the plugin actually isn't needed!
+You can define the button this way:
+    Command: <path>\gvim.exe "+n `=readfile(argv(0))`"
+    Parameters: %L
+In the help:
+    :h `=
+    :h next_f
