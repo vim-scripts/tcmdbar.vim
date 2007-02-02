@@ -1,10 +1,10 @@
 " Vim script for use with Total Commander's button bar.  It creates an
 " argument list from all selected files and edits them.
 "
-" File:	    	tcmdbar.vim
+" File:		tcmdbar.vim
 " Last Change:	2007 Jan 28
 " Author:	Andy Wokula <anwoku@yahoo.de>
-" Version:	5
+" Version:	6
 " Vim Version:	gVim 6.4 (only tested on gVim 7.0)
 " OS:		Win32 only (maybe Win16)
 "
@@ -29,10 +29,10 @@
 "
 "    From Totalcmd's help (in my words):
 "     %L creates a list file in the TEMP-directory containing the names of
-"        all selected files and folders.  The name of the list file is added
-"        to the command line.  The list file is deleted after exiting the
-"        program.  The created list contains long file names including full
-"        path.
+"	 all selected files and folders.  The name of the list file is added
+"	 to the command line.  The list file is deleted after exiting the
+"	 program.  The created list contains long file names including full
+"	 path.
 "
 " Usage:
 " The button can be used in the following ways:
@@ -44,7 +44,7 @@
 "     removed from the buffer list and the first argument is shown in a
 "     buffer.  If only directories were selected an empty buffer is created.
 "     Added: Will work with a flattened filelist (Totalcmd: Ctrl-B),
-"     therefore the %P argument is needed.
+"     therefore the dummy argument is needed.
 "
 " (2) Drag&Drop a file onto the GVim-Button:
 "     GVim loads the file argument the usual way.  If it is a directory, the
@@ -53,7 +53,15 @@
 "
 " (3) To not load any file, first select the ".." directory and click the
 "     GVim button.
+"
+" Customization: global variables for _vimrc
+"   :let Tcmdbar_OpenIn = "Tabs"	open files in tabpages (Vim7 only)
+"   :let Tcmdbar_OpenIn = "Windows"	open files in windows
+"   You may get an error if there are too many files to open - don't worry,
+"   just continue.
 " --------------------------------------------------------------------------
+"
+" User options to be aware of: 'gdefault', 'shellslash'
 
 " We must know whether a file argument is a Total Commander file list or
 " not.  In fact this is easy (?!): use the number of arguments for decision.
@@ -101,7 +109,7 @@ if getline(1)!=""
     " end of shortening the arglist
 
     " escape spaces in the filename ('gd' must be off)
-    silent %s/ /\\ /ge
+    silent %substitute/ /\\ /ge
 
     " create pre-arglist
     %join
@@ -136,9 +144,22 @@ let &gdefault = s:gd_save
 unlet s:gd_save
 
 if exists("Tcmdbar_OpenInTabs")
-    argdelete *
-    tab sball
-    tabnext 1
+    unlet Tcmdbar_OpenInTabs
+    let Tcmdbar_OpenIn = "Tabs"
+endif
+if exists("Tcmdbar_OpenIn")
+    if Tcmdbar_OpenIn =~? "^tab" && v:version >= 700
+	argdelete *
+	" assumes Vim created a buffer for each argument
+	tab sball
+	tabnext 1
+    elseif Tcmdbar_OpenIn =~? "^win"
+	argdelete *
+	sball
+	" go to first window, 'splitbelow' does not apply
+	wincmd t
+    endif
+    unlet Tcmdbar_OpenIn
 endif
 
 " vim:set ts=8:
