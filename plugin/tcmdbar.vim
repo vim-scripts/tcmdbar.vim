@@ -2,13 +2,16 @@
 " argument list from all selected files and edits them.
 "
 " File:		tcmdbar.vim
-" Last Change:	2007 Jan 28
+"		vimscript #1779
+" Created:	2007 Jan 26
+" Last Change:	2007 Aug 02
 " Author:	Andy Wokula <anwoku@yahoo.de>
-" Version:	6
+" Version:	7
 " Vim Version:	gVim 6.4 (only tested on gVim 7.0)
 " OS:		Win32 only (maybe Win16)
 "
-" Thanks To:	Florian Trippel for reporting bugs.
+" Thanks To:	Florian Trippel for reporting bugs
+"		Stefano Piccardi for diff option [2007 Aug 02]
 
 " Installation:
 " 1. Put this file in any directory (example: ~\vimfiles)
@@ -24,8 +27,8 @@
 "    ...
 "    Tooltip:	 Click to edit selected files or drag&drop a file
 "
-"    The "dummy" argument is a required dummy file name, its name is fixed.
-"    You should not run into problems if this is an existing file.
+"    The "dummy" argument is required and to be taken literally.  You should
+"    not run into problems if "dummy" is the name of an existing file.
 "
 "    From Totalcmd's help (in my words):
 "     %L creates a list file in the TEMP-directory containing the names of
@@ -33,7 +36,7 @@
 "	 to the command line.  The list file is deleted after exiting the
 "	 program.  The created list contains long file names including full
 "	 path.
-"
+
 " Usage:
 " The button can be used in the following ways:
 "
@@ -53,18 +56,18 @@
 "
 " (3) To not load any file, first select the ".." directory and click the
 "     GVim button.
-"
+
 " Customization: global variables for _vimrc
 "   :let Tcmdbar_OpenIn = "Tabs"	open files in tabpages (Vim7 only)
 "   :let Tcmdbar_OpenIn = "Windows"	open files in windows
+"   :let Tcmdbar_OpenIn = "Diff"	like windows and diff first two files
 "   You may get an error if there are too many files to open - don't worry,
 "   just continue.
-" --------------------------------------------------------------------------
-"
-" User options to be aware of: 'gdefault', 'shellslash'
 
+" Internal:
+" User options to be aware of: 'gdefault', 'shellslash'.
 " We must know whether a file argument is a Total Commander file list or
-" not.  In fact this is easy (?!): use the number of arguments for decision.
+" not - use the number of arguments for decision.
 
 " zero arguments: only ".." is selected in TC
 " one argument: drag&drop - always one file
@@ -130,7 +133,8 @@ else
     " no files selected, only directories
     bwipeout!
     " ?: howto clear the command line?
-    exe "norm! \<c-g>"
+    " exe "norm! \<c-g>"
+    exe "norm! :\<c-u>"
 endif
 
 let @/ = s:spat_save
@@ -158,6 +162,15 @@ if exists("Tcmdbar_OpenIn")
 	sball
 	" go to first window, 'splitbelow' does not apply
 	wincmd t
+    elseif Tcmdbar_OpenIn =~? "^diff"
+	argdelete *
+	" show first 2 buffers only
+	vertical sball 2
+	" go to first window
+	wincmd t
+	diffthis
+	wincmd l
+	diffthis
     endif
     unlet Tcmdbar_OpenIn
 endif
