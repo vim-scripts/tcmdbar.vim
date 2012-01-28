@@ -4,9 +4,10 @@
 " File:		tcmdbar.vim
 "		vimscript #1779
 " Created:	2007 Jan 26
-" Last Change:	2007 Aug 02
+" Last Change:	2010 Oct 31
+" Rev Days:     3   (since May 2008)
 " Author:	Andy Wokula <anwoku@yahoo.de>
-" Version:	7
+" Version:	8
 " Vim Version:	gVim 6.4 (only tested on gVim 7.0)
 " OS:		Win32 only (maybe Win16)
 "
@@ -14,8 +15,8 @@
 "		Stefano Piccardi for diff option [2007 Aug 02]
 
 " Installation:
-" 1. Put this file in any directory (example: ~\vimfiles)
-"    Note: This is not a plugin.
+" 1. Put this file in any directory (example: ~\vimfiles), but not in the
+"    plugin folder, this is not a plugin.
 "
 " 2. Create a new button for GVim in Total Commander's button bar.
 "    (Example) Dialog for this:
@@ -61,6 +62,7 @@
 "   :let Tcmdbar_OpenIn = "Tabs"	open files in tabpages (Vim7 only)
 "   :let Tcmdbar_OpenIn = "Windows"	open files in windows
 "   :let Tcmdbar_OpenIn = "Diff"	like windows and diff first two files
+"   :let Tcmdbar_OpenIn = "Ask"		query the user with a dialog
 "   You may get an error if there are too many files to open - don't worry,
 "   just continue.
 
@@ -152,6 +154,13 @@ if exists("Tcmdbar_OpenInTabs")
     let Tcmdbar_OpenIn = "Tabs"
 endif
 if exists("Tcmdbar_OpenIn")
+    if Tcmdbar_OpenIn =~? "^ask" && argc() >= 2
+	let s:candiff = argc() == 2
+	let Tcmdbar_OpenIn = strpart("arg win tab ". (s:candiff ? "diff" : ""),
+		    \ confirm("How do you want to open the files?"
+		    \, "&argument list\n&windows\n&tab pages".(s:candiff ? "\n&diff mode" : "")
+		    \, 1, "Question")*4-4, 3)
+    endif
     if Tcmdbar_OpenIn =~? "^tab" && v:version >= 700
 	argdelete *
 	" assumes Vim created a buffer for each argument
@@ -162,15 +171,11 @@ if exists("Tcmdbar_OpenIn")
 	sball
 	" go to first window, 'splitbelow' does not apply
 	wincmd t
-    elseif Tcmdbar_OpenIn =~? "^diff"
+    elseif Tcmdbar_OpenIn =~? "^dif"
 	argdelete *
 	" show first 2 buffers only
 	vertical sball 2
-	" go to first window
-	wincmd t
-	diffthis
-	wincmd l
-	diffthis
+	windo diffthis
     endif
     unlet Tcmdbar_OpenIn
 endif
